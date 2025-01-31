@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base container styles */
+.product-card {
+    position: relative;
+    transition: all 0.3s ease;
+    height: 400px; /* Adjust based on your needs */
+}
+
+/* Hide scrollbar by default */
+.scroll-hidden {
+    overflow-y: auto;
+}
+
+.scroll-hidden::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+/* Show scrollbar on hover */
+.scroll-hidden:hover::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+    opacity: 1;
+}
+
+/* Scrollbar track styles */
+.scroll-hidden:hover::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+    margin: 4px;
+}
+
+/* Scrollbar handle styles */
+.scroll-hidden:hover::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+    transition: background 0.2s ease;
+}
+
+/* Scrollbar handle hover effect */
+.scroll-hidden:hover::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* For Firefox */
+.scroll-hidden {
+    scrollbar-width: none;
+    scrollbar-color: #888 #f1f1f1;
+}
+
+.scroll-hidden:hover {
+    scrollbar-width: thin;
+}
+
+/* Card content styles */
+.card-img-top {
+    width: 50%;
+    height: auto;
+    margin: 0 auto;
+    object-fit: cover;
+}
+
+.card-body {
+    padding: 1rem;
+}
+
+.card-title {
+    margin-bottom: 0.75rem;
+}
+
+.card-text {
+    margin-bottom: 1rem;
+}
