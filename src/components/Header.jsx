@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, User, LogOut, Home, Info, Package, ChevronDown, LayoutDashboard, Bell, Search, ShoppingCart } from 'lucide-react';
 import LoginModal from "./LoginModal";
+import Cart from "./Cart";
+import PaymentTab from "./PaymentTab";
 
-const Header = ({ user, onLogin, onLogout, setShowDashboard }) => {
+const Header = ({ user, onLogin, onLogout, setShowDashboard, notifications }) => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [isLoginModalOpen, setLoginModalOpen] = useState(false);
   const [isNameInputOpen, setNameInputOpen] = useState(false);
@@ -14,14 +16,26 @@ const Header = ({ user, onLogin, onLogout, setShowDashboard }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  // const [notifications, setNotifications] = useState([]);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const notificationRef = useRef(null);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+    const handleClickOutside = (event) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        setIsNotificationOpen(false);
+      }
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+
+    if (isNotificationOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isNotificationOpen]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -112,17 +126,72 @@ const Header = ({ user, onLogin, onLogout, setShowDashboard }) => {
                 >
                   <Search className="h-5 w-5 text-gray-600" />
                 </button>
-                <button className="p-2 rounded-full hover:bg-gray-100 transition-colors relative">
+                <button
+                  onClick={() => setIsCartOpen(true)}
+                  className="p-2 rounded-full hover:bg-gray-100 transition-colors relative"
+                >
                   <ShoppingCart className="h-5 w-5 text-gray-600" />
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
                     3
                   </span>
                 </button>
-                <button className="p-2 rounded-full hover:bg-gray-100 transition-colors relative">
-                  <Bell className="h-5 w-5 text-gray-600" />
-                  <span className="absolute top-0 right-0 h-2 w-2 bg-blue-500 rounded-full"></span>
-                </button>
+
+                <nav className="flex items-center space-x-4">
+                  <div className="relative" ref={notificationRef}>
+                    {/* Bell Icon Button */}
+                    <button
+                      onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+                      className="p-2 rounded-full relative hover:bg-gray-100"
+                    >
+                      <Bell className="h-6 w-6 text-gray-600" />
+                      {notifications && notifications.length > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                          {notifications.length}
+                        </span>
+                      )}
+                    </button>
+
+                    {/* Notification Dropdown */}
+                    {isNotificationOpen && (
+                      <div className="absolute right-0 mt-2 w-80 bg-white border rounded-lg shadow-lg p-4 z-50">
+                        <div className="flex justify-between items-center mb-3">
+                          <h3 className="text-sm font-semibold">Notifications</h3>
+                          <button
+                            onClick={() => setIsNotificationOpen(false)}
+                            className="text-gray-400 hover:text-gray-600"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+                        <div className="max-h-96 overflow-y-auto">
+                          {notifications && notifications.length > 0 ? (
+                            notifications.map((notification, index) => (
+                              <div
+                                key={index}
+                                className="py-3 px-4 border-b last:border-0 hover:bg-gray-50 transition-colors"
+                              >
+                                <div className="flex items-start">
+                                  <div className="flex-1">
+                                    <p className="text-sm text-gray-800">{notification.message}</p>
+                                    <span className="text-xs text-gray-500 mt-1">
+                                      {notification.timestamp}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-sm text-gray-500 text-center py-4">
+                              No new notifications
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </nav>
               </div>
+              {/* <PaymentTab addPaymentNotification={addPaymentNotification} /> */}
 
               {user ? (
                 <div className="relative ml-3 profile-menu">
@@ -186,19 +255,19 @@ const Header = ({ user, onLogin, onLogout, setShowDashboard }) => {
           </div>
 
           {/* Search Bar */}
-            <div className={`overflow-hidden transition-all duration-300 ${isSearchOpen ? 'h-16 opacity-100' : 'h-0 opacity-0'
-              }`}>
-              <div className="py-3">
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Search..."
-                    className="w-full px-5 py-2 pl-10 pr-4 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  <Search className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-                </div>
+          <div className={`overflow-hidden transition-all duration-300 ${isSearchOpen ? 'h-16 opacity-100' : 'h-0 opacity-0'
+            }`}>
+            <div className="py-3">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  className="w-full px-5 py-2 pl-10 pr-4 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <Search className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
               </div>
             </div>
+          </div>
         </div>
 
         {/* Mobile menu */}
@@ -373,6 +442,7 @@ const Header = ({ user, onLogin, onLogout, setShowDashboard }) => {
         onClose={() => setLoginModalOpen(false)}
         onLoginSuccess={handleLoginSuccess}
       />
+      <Cart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </>
   );
 };
